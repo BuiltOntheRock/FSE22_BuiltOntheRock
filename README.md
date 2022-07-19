@@ -59,7 +59,7 @@ cleaned_code, cleaned_comment = cleaner.get_clean_data()
 # get the noisy code-comment data
 noisy_data = cleaner.get_noisy_data()
 ```
-For more detailed usage and examples, please refer to the `CAT/Usage.ipynb`.
+For more detailed usage and examples, please refer to the [CAT/Usage.ipynb](/CAT/Usage.ipynb).
 
 ## 2 Project Summary
 In this work, we conduct a systematic research to assess and improve the quality of four benchmark datasets widely used for code summarization tasks. First, we propose an automated code-comment cleaning tool that can accurately detect noisy data caused by inappropriate data preprocessing operations from existing benchmark datasets. Then, we apply the tool to further assess the data quality of the four benchmark datasets, based on the detected noises. Finally, we conduct comparative experiments to investigate the impact of noisy data on the performance of code summarization models. The results show that these data preprocessing noises widely exist in all four benchmark datasets, and removing these noisy data leads to a significant improvement on the performance of code summarization.
