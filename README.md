@@ -2,38 +2,84 @@
 This is a replication package for `Are We Building on the Rock? On the Importance of Data Preprocessing for Code Summarizations`. Our project is public at: <https://github.com/BuiltOntheRock/FSE22_BuiltOntheRock>
 
 ## Content
-1. [Project Summary](#1-Project-Summary)<br>
-2. [Benchmark Datasets](#2-Benchmark-Datasets)<br>
-3. [Research Methodology](#3-Research-Methodology)<br>
-4. [Taxonomy of Noisy Data](#4-Taxonomy-of-Noisy-Data)<br>
-&ensp;&ensp;4.1 [Comment-related Noisy Data](#41-Comment-related-Noisy-Data)<br>
-&ensp;&ensp;4.2 [Code-related Noisy Data](#42-Code-related-Noisy-Data)<br>
-5. [The Code-Comment Cleaning Tool](#5-The-Code-Comment-Cleaning-Tool)<br>
-6. [Quality Assessment of Benchmarks](#6-Quality-Assessment-of-Benchmarks)<br>
-7. [Impacts on the Performance of Code Summarization](#7-Impacts-on-the-Performance-of-Code-Summarization)<br>
-8. [Download](#8-Download)<br>
-&ensp;&ensp;8.1 [Cleaned Datasets](#81-Cleaned-Datasets)<br>
-&ensp;&ensp;8.2 [The Code-Comment Cleaning Tool](#82-The-Code-Comment-Cleaning-Tool)<br>
+1. [Get Started](#1-Get-Started)<br>
+&ensp;&ensp;1.1 [Cleaned Datasets](#11-Cleaned-Datasets)<br>
+&ensp;&ensp;1.2 [The Code-Comment Cleaning Tool](#12-The-Code-Comment-Cleaning-Tool)<br>
+&ensp;&ensp;1.3 [Usage](#13-Usage)<br>
+2. [Project Summary](#2-Project-Summary)<br>
+3. [Benchmark Datasets](#3-Benchmark-Datasets)<br>
+4. [Research Methodology](#4-Research-Methodology)<br>
+5. [Taxonomy of Noisy Data](#5-Taxonomy-of-Noisy-Data)<br>
+&ensp;&ensp;5.1 [Comment-related Noisy Data](#51-Comment-related-Noisy-Data)<br>
+&ensp;&ensp;5.2 [Code-related Noisy Data](#52-Code-related-Noisy-Data)<br>
 
-## 1 Project Summary
+## 1 Get Started
+### 1.1 Cleaned Datasets
+Our cleaned datasets can be found at [cleaned datasets](https://drive.google.com/file/d/1m4uZi0hoInYxkgrSlF23EjVasSgaXOXy/view)
+
+### 1.2 The Code-Comment Cleaning Tool
+Run the following command to install our cleaning tool:
+```
+pip install FSE22-CAT==0.01
+```
+### 1.3 Usage
+
+#### Get the first sentence of comment
+```python
+>>> from noise_detection import *
+>>> raw_comment = "\t/**\n\t * Returns the high-value (as a double primitive) \n\t * for an item within a series.\n\t * \n\t * @param series\n\t * @param item \n\t * @return The high-value.\n\t */\n "
+>>> getFirstSentence(raw_comment)
+'Returns the high-value (as a double primitive) for an item within a series.'
+```
+
+#### Noise Detection
+```python
+>>> raw_comment = "/**\n     * relayTbList\u3068\u306e\u5916\u90e8\u7d50\u5408\u3092\u30c6\u30b9\u30c8\u3057\u307e\u3059\u3002\n     * \n     * @throws Exception\n     */\n "
+>>> comment = getFirstSentence(raw_comment)
+'relayTbListとの外部結合をテストします。'
+>>> if_NonLiteral(comment)
+True
+```
+
+#### Clean Code-Comment Data
+```python
+from rule_cleaner import RuleCleaner
+import json
+# prepare the raw data that may contain noise
+with open('./test.data', 'r') as f:
+    data_lines = f.readlines()
+raw_code_list, raw_comment_list = [], []
+for line in data_lines:
+    json_line = json.loads(line.strip())
+    raw_code_list.append(json_line['raw_code'])
+    raw_comment_list.append(json_line['raw_comment'])
+# get the cleaned code-comment data
+cleaner = RuleCleaner(raw_code_list, raw_comment_list)
+cleaned_code, cleaned_comment = cleaner.get_clean_data()
+# get the noisy code-comment data
+noisy_data = cleaner.get_noisy_data()
+```
+For more detailed usage and examples, please refer to the `CAT/Usage.ipynb`.
+
+## 2 Project Summary
 In this work, we conduct a systematic research to assess and improve the quality of four benchmark datasets widely used for code summarization tasks. First, we propose an automated code-comment cleaning tool that can accurately detect noisy data caused by inappropriate data preprocessing operations from existing benchmark datasets. Then, we apply the tool to further assess the data quality of the four benchmark datasets, based on the detected noises. Finally, we conduct comparative experiments to investigate the impact of noisy data on the performance of code summarization models. The results show that these data preprocessing noises widely exist in all four benchmark datasets, and removing these noisy data leads to a significant improvement on the performance of code summarization.
 
-## 2 Benchmark Datasets
+## 3 Benchmark Datasets
 This study conducts various experiments on four widely-used code summarization datasets, including [FunCom](http://leclair.tech/data/funcom/), [TLC](https://github.com/xing-hu/TL-CodeSum), [CSN](https://github.com/github/codesearchnet), and [PCSD](https://github.com/EdinburghNLP/code-docstring-corpus).
 
 More specifically, **FunCom** is a collection of 2.1M code-comment pairs from 29K projects. For each method, it extracted its Javadoc comment and treated the first sentence in the Javadoc of each method as its summary. **TLC** has 87K code-comment pairs collected from more than 9K open-source Java projects created from 2015 to 2016 with at least 20 stars. It extracted the Java methods and their corresponding Javadoc comments. These comments are considered as code summaries. **CSN** contains about 2M method and comment pairs mined from publicly available open-source non-fork GitHub repositories spanning six programming languages, i.e., Go, Java, JavaScript, PHP, Python, and Ruby. **PCSD** contains 105K pairs of Python functions and their comments from open source repositories in GitHub. Specifically, it uses docstrings (i.e., the string literals that appear right after the definition of functions) as summaries for Python functions.
 
-## 3 Research Methodology
+## 4 Research Methodology
 The research methodology overview consists of four main steps:  
 **I. Taxonomy of Noisy Data :** First, we propose a taxonomy of 12 different types of data noises due to inappropriate or insufficient data preprocessing in code summarization, derived from observations on the selected four benchmark datasets.  
 **II. The Code-Comment Cleaning Tool :** Second, we build a rule-based cleaning tool, named CAT (Code-comment cleAning Tool), for automatically scanning and detecting the occurrences and distribution of data noises for a given dataset, based on the proposed taxonomy.  
 **III. Quality Assessment of Benchmarks :** Third, we conduct an evaluation study to assess the data quality of the four widely-used benchmark datasets. The results show that noisy data extensively exist in the four benchmark datasets (ranging from 31% to 66%).  
 **IV. Impacts on the Performance of Code Summarization :** Finally, we investigate the impacts of noises on three typical code summarization models (i.e. NNGen, NCS, and Rencos) by comparing their performance trained on the same datasets before and after data cleaning.  
 
-## 4 Taxonomy of Noisy Data
+## 5 Taxonomy of Noisy Data
 We propose a taxonomy of 12 different types of data noises due to inappropriate or insufficient data preprocessing in code summarization.
 
-### 4.1 Comment-related Noisy Data
+### 5.1 Comment-related Noisy Data
 #### Partial Sentence
 Since it is a common practice to place a method's summary at the first sentence of its comment, most researchers use the first sentences of the code comments as the target summaries. While, we have observed that some inappropriate processing can lead to partial first sentences collected. For example:
 ```
@@ -92,7 +138,7 @@ protected void openFile(File f) {
  ----------------------------------
  Comment(TLC): description of the method
 ```
-### 4.2 Code-related Noisy Data
+### 5.2 Code-related Noisy Data
 #### Empty Function
 Developers often take on technical debt to speed up software development. It has been widely observed that empty function is a common type of technical debt. However, the code-comment pairs extracted from these empty functions can introduce non-trivial noises, this is because an unimplemented empty function and its comment do not match either syntactically or semantically. For example:
 ```
@@ -133,35 +179,3 @@ public void testConstructor() {
 ```
 #### Duplicated Code
 Developers often reuse code by copying, pasting and modifying to speed up software development. These code snippets often have similar or the same comments. Sharing identical code and summarization pairs in the training and test sets is inappropriate and would make the model learn these cases easily.
-
-## 5 The Code-Comment Cleaning Tool
-This table demonstrates the syntax feature of heuristic rules and our actions to resolve noises detected
-
-
-
-We use three commonly-used metrics to evaluate the performance of CAT, i.e., Precision, Recall, and F1. We can see that, it can accurately detect noises on the four benchmark datasets. The F1 scores of detecting comment-related noises are ranging from 93.0% to 100.0%, and 95.5% on average. The average F1 scores of detecting code-related noises are ranging from 95.6% to 100.0%, and 98.3% on average. The results show that, CAT can achieve highly satisfactory performance on filtering noisy data from code-comment datasets. In summary, our code-comment cleaning tool can accurately filter noisy data, with all the F1 scores of over 90.0%, which can help build a high-quality dataset for the follow-up code summarization tasks.
-
-
-
-## 6 Quality Assessment of Benchmarks
-This table illustrates the distribution of each noise category on the four benchmark datasets.
-
-
-
-Noisy data extensively exist in the four widely-used benchmark datasets, ranging from 31.2% to 65.8%. 29.8% of the code in Funcom is auto-generated; 22.8% comments in TLC are verbose first sentences; 24.4% comments in CSN are contaminated by the meaningless text; and 15.9% comments in PCSD are the partial first sentences.
-## 7 Impacts on the Performance of Code Summarization
-Existing code summarization models can be divided into three categories: Information Retrieval (IR) based approaches, Neural Machine Translation (NMT) based approaches, and hybrid approaches that combine IR and NMT techniques. We select one state-of-the-art method from each category to explore the impact of noisy data on model performance. They are NNGen, NCS and Rencos. We evaluated the performance of the three models using four metrics including BLEU, METEOR, ROUGE-L, and CIDEr.
-This table shows the performance of the three models trained over different experimental datasets.
-
-
-
-Removing noisy data from the training set in the four benchmark datasets has a positive influence on the performance of the models. Training three existing models with the filtered benchmark datasets improves the BLEU-4 by 26.9%, 20.7%, and 24.1%, respectively.
-## 8 Download
-### 8.1 Cleaned Datasets
-Our cleaned datasets can be found at [cleaned datasets](https://drive.google.com/file/d/1m4uZi0hoInYxkgrSlF23EjVasSgaXOXy/view)
-
-### 8.2 The Code-Comment Cleaning Tool
-Run the following command to install our cleaning tool:
-```
-pip install FSE22-CAT==0.01
-```
