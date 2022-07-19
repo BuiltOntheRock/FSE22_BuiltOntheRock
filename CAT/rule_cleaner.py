@@ -23,7 +23,6 @@ class RuleCleaner(object):
                            'EmptyFunc': [], 'CommentOut': [], 'BlockComment': [], 'AutoCode': [], 'DuplicatedCode': []}
 
     def get_clean_data(self):
-        count = 0
         for raw_code, raw_comment in tqdm(zip(self.raw_code_list, self.raw_comment_list)):
             firstSentence = getFirstSentence(raw_comment)
             updated_comment = self.update_ContentTamper(firstSentence)
@@ -50,12 +49,11 @@ class RuleCleaner(object):
                 self.noisy_data['CommentOut'].append((raw_code, raw_comment))
                 continue
             updated_code = self.update_BlockComment(raw_code)
-            if if_AutoCode_by_code(updated_code):
-                count += 1
-                self.noisy_data['AutoCode'].append((raw_code, raw_comment))
-                continue
             if updated_code != raw_code:
                 self.noisy_data['BlockComment'].append((raw_code, raw_comment))
+            if if_AutoCode_by_code(updated_code):
+                self.noisy_data['AutoCode'].append((raw_code, raw_comment))
+                continue
             if if_EmptyFunc(updated_code):
                 self.noisy_data['EmptyFunc'].append((raw_code, raw_comment))
                 continue
